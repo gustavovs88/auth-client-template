@@ -20,7 +20,8 @@
       "@components/*": ["components/*"],
       "@pages/*": ["components/pages/*"],
       "@utils/*": ["utils/*"],
-      "@styles/*": ["styles/*"]
+      "@styles/*": ["styles/*"],
+      "@services/*": ["services/*"]
     }
   },
   "include": ["src"],

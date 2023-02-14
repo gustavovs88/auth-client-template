@@ -1,8 +1,7 @@
 import { useState, createContext, useEffect } from "react";
-import Fetch from "@utils/fetchClient/fetch";
 import decodeJWTToken from "@utils/jwt/jwt";
 import { deleteCookie } from "@utils/cookies/cookies";
-import fetch from "@utils/fetchClient/fetch";
+import AuthApi from "services/api/authentication/AuthApi";
 
 export interface AuthContextType {
   user: IDecodedAuthToken;
@@ -54,16 +53,16 @@ export const authenticate = {
       callback(isTokenValid);
     } else {
       try {
-        const token = await Fetch.post("api/v1/auth/refresh", {});
-        if (!token?.error) {
+        const token = await AuthApi.refreshToken();
+        if ("error" in token) {
+          callback(null);
+        } else {
           localStorage.setItem("accessToken", token.accessToken);
           authenticate.isAuthenticated = true;
           const decoded: IDecodedAuthToken | null = decodeJWTToken(
             token.accessToken
           );
           callback(decoded);
-        } else {
-          callback(null);
         }
       } catch (error) {
         callback(null);
@@ -73,7 +72,7 @@ export const authenticate = {
   async signout(callback: VoidFunction) {
     deleteCookie("refreshToken");
     localStorage.removeItem("accessToken");
-    await fetch.post("api/v1/auth/logout", {});
+    await AuthApi.logout();
     callback();
   },
 };

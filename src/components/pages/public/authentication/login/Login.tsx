@@ -5,12 +5,13 @@ import { IconToggle } from "@components/globals/IconToggle";
 import { InputText } from "@components/globals/InputText";
 import { LoadingSpinner } from "@components/globals/LoadingSpinner";
 import { Text } from "@components/globals/Text";
-import Fetch from "@utils/fetchClient/fetch";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Heading } from "@components/globals/Heading";
 import { BaseError } from "@pages/public/authentication/BaseError";
 import Carousel from "nuka-carousel";
 import { BaseWrapper } from "@components/pages/public/authentication/BaseWrapper";
+import AuthApi, { IloginParams } from "@services/api/authentication/AuthApi";
+import { ILoginParams } from "../AuthProvider";
 
 export function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +41,12 @@ export function Login() {
 
     if (isValid) {
       const formData = new FormData(formElement);
-      const postData = Object.fromEntries(formData.entries());
+      const postData = Object.fromEntries(
+        formData.entries()
+      ) as unknown as ILoginParams;
       try {
-        const login = await Fetch.post("api/v1/auth/login", postData);
-        if (login?.error) {
+        const login = await AuthApi.login(postData);
+        if ("error" in login) {
           setErrorMessage(login.error.message.formatted);
           onError();
         } else {
@@ -52,9 +55,7 @@ export function Login() {
           navigate(from, { replace: true });
         }
       } catch (error) {
-        setErrorMessage(
-          "Tivemos um problema. Tente novamente, se o problema persistir entre em contato conosco."
-        );
+        setErrorMessage("Erro inesperado. Tente novamente mais tarde.");
         onError();
       }
     } else {

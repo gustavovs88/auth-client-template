@@ -4,13 +4,15 @@ import { Button } from "@components/globals/Button";
 import { InputText } from "@components/globals/InputText";
 import { LoadingSpinner } from "@components/globals/LoadingSpinner";
 import { Text } from "@components/globals/Text";
-import Fetch from "@utils/fetchClient/fetch";
 import { Link, useLocation } from "react-router-dom";
 import { Heading } from "@components/globals/Heading";
 import Carousel, { ScrollMode } from "nuka-carousel";
 import { BaseWrapper } from "@components/pages/public/authentication/BaseWrapper";
 import { ResetPasswordSuccess } from "./ResetPasswordSuccess";
 import { BaseError } from "@pages/public/authentication/BaseError";
+import AuthApi, {
+  IRequestResetPasswordParams,
+} from "@services/api/authentication/AuthApi";
 
 export function RequestResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,22 +40,19 @@ export function RequestResetPassword() {
 
     if (isValid) {
       const formData = new FormData(formElement);
-      const postData = Object.fromEntries(formData.entries());
+      const postData = Object.fromEntries(
+        formData.entries()
+      ) as unknown as IRequestResetPasswordParams;
       try {
-        const resetPassword = await Fetch.post(
-          "api/v1/auth/resetPassword",
-          postData
-        );
-        if (resetPassword?.error) {
+        const resetPassword = await AuthApi.requestResetPassword(postData);
+        if ("error" in resetPassword) {
           setErrorMessage(resetPassword.error.message.formatted);
         } else {
           onSuccess();
           setIsLoading(false);
         }
       } catch (error) {
-        setErrorMessage(
-          "Tivemos um problema. Tente novamente, se o problema persistir entre em contato conosco."
-        );
+        setErrorMessage("Erro inesperado. Tente novamente  mais tarde");
         onError();
       }
     } else {

@@ -4,7 +4,6 @@ import { Button } from "@components/globals/Button";
 import { InputText } from "@components/globals/InputText";
 import { LoadingSpinner } from "@components/globals/LoadingSpinner";
 import { Text } from "@components/globals/Text";
-import Fetch from "@utils/fetchClient/fetch";
 import { Link, redirect, useSearchParams, useNavigate } from "react-router-dom";
 import { Heading } from "@components/globals/Heading";
 import Carousel, { ScrollMode } from "nuka-carousel";
@@ -14,6 +13,7 @@ import { BaseError } from "@pages/public/authentication/BaseError";
 import decodeJWTToken from "@utils/jwt/jwt";
 import { IDecodedAuthToken } from "../../AuthProvider";
 import { IconToggle } from "@components/globals/IconToggle";
+import CustomerApi from "services/api/customer/CustomerApi";
 
 export function ResetPassword() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -82,20 +82,18 @@ export function ResetPassword() {
 
     if (isValid) {
       try {
-        const updatePassword = await Fetch.put("api/v1/customer/password", {
-          password: postData.password,
-          resetPasswordToken: token,
-        });
-        if (updatePassword?.error) {
+        const updatePassword = await CustomerApi.updatePassword(
+          postData.password as string,
+          token
+        );
+        if ("error" in updatePassword) {
           setErrorMessage(updatePassword.error.message.formatted);
         } else {
           onSuccess();
           setIsLoading(false);
         }
       } catch (error) {
-        setErrorMessage(
-          "Tivemos um problema. Tente novamente, se o problema persistir entre em contato conosco."
-        );
+        setErrorMessage("Erro inesperado. Tente novamente  mais tarde");
         onError();
       }
     } else {
